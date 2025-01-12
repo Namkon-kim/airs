@@ -1,4 +1,11 @@
 from pydantic import BaseModel
+from enum import Enum
+
+
+class GenderEnum(str, Enum):
+    man = 'M'
+    female = 'F'
+    other = 'O'
 
 
 class UserBase(BaseModel):
@@ -7,11 +14,16 @@ class UserBase(BaseModel):
 
 
 class UserCreate(UserBase):
-    pass
+    user_id: str
+    username: str
+    email: str
+    dept_id: str
+    password: str
+    gender: GenderEnum
 
 
 class UserRead(UserBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
