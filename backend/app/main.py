@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session
 
 from app.api.v1 import router as v1_router
 
-from db.core import Base, engine, get_db
-from db.model import User
-from schemas.user import UserCreate, UserRead
-from db.user import get_user, create_user
+from app.db.core import Base, engine, get_db
+from app.db.model import User
+from app.schemas.user import UserCreate, UserRead
+from app.db.user import get_user, create_user
 
 # 모든 테이블 삭제
 # Base.metadata.drop_all(bind=engine)

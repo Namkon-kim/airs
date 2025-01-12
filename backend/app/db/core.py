@@ -1,15 +1,25 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
+from dotenv import load_dotenv
 
-DATABASE_URL = "postgresql://user:password@localhost/dbname"
+load_dotenv(verbose=True)
 
-# Engine 생성
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+dbms = os.getenv('DBMS')
+host = os.getenv('DB_HOST')
+port = os.getenv('DB_PORT')
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+database = os.getenv('DB_NAME')
+options = os.getenv('DB_OPTIONS')
 
-# 세션 팩토리 정의
+database_url = f'{dbms}://{user}:{password}@{host}:{port}/{database}'
+if options:
+    database_url += f'?{options}'
+
+engine = create_engine(database_url, pool_pre_ping=True)
 SessionLocal = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
-
-# Base 클래스
 Base = declarative_base()
 
 # Dependency 주입 함수

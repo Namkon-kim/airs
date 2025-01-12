@@ -8,18 +8,19 @@ from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordBearer
 from starlette.responses import JSONResponse
 
-from models import Token, UserRegister, CustomOAuth2PasswordRequestForm, OAuth2PasswordRequestForm
-from database.portal import Users
-from lib.auth import get_password_hash, match_password, create_access_token
-
+from app.schemas.auth import Token, CustomOAuth2PasswordRequestForm, OAuth2PasswordRequestForm
+from app.schemas.user import UserRegister
+from app.db import user_service
+from app.db.model import User
+from app.core.auth import get_password_hash, match_password, create_access_token
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 router = APIRouter(prefix='/auth')
 
 
-@router.post('/v1/register/email')
-def register_new_user(reg_info: UserRegister = Depends()):
+@router.post('/register')
+def register_new_user(reg_info: UserRegister):
     """회원가입 API
     Parameters:
 
@@ -27,25 +28,32 @@ def register_new_user(reg_info: UserRegister = Depends()):
     Returns:
         aa
     """
-    user_info = Users.get(reg_info.email)
+    user_info = user_service.get_user_by_user_id(reg_info.emp_id)
     is_exist = True if user_info else False
     pw = reg_info.password.get_secret_value()
     pw_val = reg_info.password_valid.get_secret_value()
-    if not reg_info.email or not pw:
-        return JSONResponse(status_code=400, content=dict(msg='Email and Password must be provided'))
+    if not reg_info.emp_id or not pw or not reg_info.email:
+        return JSONResponse(status_code=400, content=dict(msg='Employee ID, Email and Password must be provided'))
     if is_exist:
-        return JSONResponse(status_code=400, content=dict(msg='Email is already exists'))
+        return JSONResponse(status_code=400, content=dict(msg='User is already exists'))
     hashed_password = get_password_hash(pw)
-    Users.create(email=reg_info.email,
-                 password=hashed_password,
-                 name=reg_info.name,
-                 phone_number=reg_info.phone_number)
+    user = User(user_id=reg_info.emp_id,
+                username=reg_info.name,
+                email=reg_info.email,
+                dept_id=reg_info.dept_id,
+                password=hashed_password,
+                gender=reg_info.gender)
+
+    ret = user_service.create_user(user)
+    if not ret:
+        return JSONResponse(status_code=400, content=dict(msg='Email is duplicated'))
+
     return JSONResponse(status_code=200, content=dict(msg='success'))
 
 
-@router.post("/v1/auth", response_model=Token)
-async def login_for_access_token(login_info: CustomOAuth2PasswordRequestForm = Depends()):
-    user = Users.get(login_info.username)
+@router.post("/login", response_model=Token)
+async def login(login_info: CustomOAuth2PasswordRequestForm = Depends()):
+    user = User.get(login_info.username)
     if not user:
         return JSONResponse(
             status_code=401,
