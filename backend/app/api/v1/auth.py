@@ -49,7 +49,6 @@ def register_new_user(reg_info: UserRegister):
         return JSONResponse(status_code=400, content=dict(msg='Email is duplicated'))
 
     return JSONResponse(status_code=200, content=dict(msg='success'))
-#test
 
 @router.post("/login", response_model=Token)
 async def login(login_info: CustomOAuth2PasswordRequestForm = Depends()):
