@@ -5,7 +5,7 @@ from app.db.core import Base
 class User(Base):
     __tablename__ = "user"
 
-    user_id = Column(VARCHAR(7), primary_key=True)
+    emp_id = Column(VARCHAR(7), primary_key=True)
     password = Column(VARCHAR(60), nullable=False)
     username = Column(VARCHAR(5), nullable=False, index=True)
     email = Column(VARCHAR(50), unique=True, nullable=False)

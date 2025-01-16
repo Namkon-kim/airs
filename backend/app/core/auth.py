@@ -8,6 +8,7 @@ from typing import Union, Dict
 from datetime import datetime, timedelta
 from jose import jwt
 from dotenv import load_dotenv
+from app.db import user_service
 
 load_dotenv(verbose=True)
 
@@ -19,8 +20,17 @@ def get_password_hash(password: str):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 
-def match_password(password: str, hashed_password: bytes) -> bool:
-    return bcrypt.checkpw(password.encode('utf-8'), hashed_password)
+def match_password(password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+
+def authenticate_user(emp_id: str, password: str):
+    user = user_service.get_user_by_user_id(emp_id)
+    if not user:
+        return False
+    if not match_password(password, user.password):
+        return False
+    return user
 
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):

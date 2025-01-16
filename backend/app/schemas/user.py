@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, EmailStr, SecretStr, validator
+from pydantic import BaseModel, Field, EmailStr, SecretStr, model_validator, root_validator
+from typing_extensions import Self
 from enum import Enum
 
 
@@ -17,12 +18,11 @@ class UserRegister(BaseModel):
     dept_id: str = Field(...)
     gender: GenderEnum = Field(...)
 
-    # TODO: password validation 제대로 동작하는지 확인
-    @validator('password_valid')
-    def passwords_match(cls, v, values, **kwargs):
-        if 'password_valid' in values and v != values['password']:
-            raise ValueError('passwords do not match')
-        return v
+    @model_validator(mode='after')
+    def check_passwords_match(self) -> Self:
+        if self.password != self.password_valid:
+            raise ValueError('비밀번호가 일치하지 않습니다')
+        return self
 
 
 class UserBase(BaseModel):

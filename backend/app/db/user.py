@@ -1,3 +1,4 @@
+from typing import Any, Union
 from sqlalchemy.orm import Session
 from sqlalchemy import select, insert, update, and_, or_
 from sqlalchemy.exc import PendingRollbackError, IntegrityError
@@ -20,7 +21,7 @@ class UserService:
         :param user_id: 사용자 ID
         :return: 사용자 정보
         """
-        stmt = select(User).where(User.user_id == user_id)
+        stmt = select(User).where(User.emp_id == user_id)
         return self.session.execute(stmt).scalar()
 
     def create_user(self, user: User):
@@ -33,6 +34,10 @@ class UserService:
             return False
 
         return True
+
+    def value_counts(self, columns: str, value: Union[str, int, float]):
+        stmt = select(columns).where(columns == value)
+        return len(self.session.execute(stmt).all())
 
     def get_all_users(self):
         """
@@ -116,7 +121,7 @@ def create_user(db: Session, user: UserCreate):
 if __name__ == '__main__':
     # TODO : get_user 테스트 해보기
     # user = UserCreate
-    # user.user_id = 'so22816'
+    # user.emp_id = 'so22816'
     # user.username = '김남곤'
     # user.email = 'namkon.kim@sk.com'
     # user.dept_id = 'MI'

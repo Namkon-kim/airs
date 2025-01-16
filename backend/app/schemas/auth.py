@@ -8,20 +8,15 @@ from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
 class TokenData(BaseModel):
     username: Union[str, None] = None
 
 
 class CustomOAuth2PasswordRequestForm(OAuth2PasswordRequestForm):
     def __init__(self,
-                 email: str = Form(...),
-                 password: SecretStr = Form(...)):
-        super().__init__(username=email,
+                 emp_id: str = Form(..., example=None),
+                 password: SecretStr = Form(..., example=None)):
+        super().__init__(username=emp_id,
                          password=password.get_secret_value(),
                          scope='',
                          client_id=None,
